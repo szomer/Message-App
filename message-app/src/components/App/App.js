@@ -1,27 +1,26 @@
-import logo from './logo.svg';
 import './App.css';
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
+const socket = io.connect('http://localhost:3001');
 
 function App() {
 
   const [data, setData] = useState();
 
+
   useEffect(() => {
-    fetch('/api')
+    fetch('/api/test')
       .then((data) => data.json())
       .then((data) => setData(data.message));
   }, [])
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
 
-        {data &&
-          <p>{data}</p>
-        }
+      {data &&
+        <p>{data}</p>
+      }
 
-      </header>
     </div>
   );
 }
