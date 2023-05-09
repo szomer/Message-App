@@ -21,4 +21,4 @@ Back-End:
 ## 2. Implementation
 
 ![alt ER Diagram](documentation/ER_Diagram.jpg?raw=true)
-![alt Sequence Diagram](documentation/Sequence_Diagram.jpg?raw=true)
+![alt Sequence Diagram](documentation/Sequence_Diagram.JPG?raw=true)
