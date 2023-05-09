@@ -14,7 +14,7 @@ Back-End:
 
 - **Node.js**: a back-end JavaScript runtime environment, runs on the V8 JavaScript Engine, and executes JavaScript code outside a web browser.
 
-- **Express.js**: a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications
+- **Express.js**: a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.
 
 - **PostgreSQL**: a relational database management system.
 
