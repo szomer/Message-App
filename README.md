@@ -1,17 +1,24 @@
 # Message App
 
-front end:
+## 1. Technologies Used
 
-1. **React**: a front-end JavaScript library for building user interfaces based on components.
+Front-End:
 
-2. **Less**: (Leaner Style Sheets) a backwards-compatible language extension for CSS.
+- **React**: a front-end JavaScript library for building user interfaces based on components.
 
-3. **Tailwind CSS**: a utility-first CSS framework.
+- **Less**: (Leaner Style Sheets) a backwards-compatible language extension for CSS.
 
-back end:
+- **Tailwind CSS**: a utility-first CSS framework.
 
-1. **Node.js**: a back-end JavaScript runtime environment, runs on the V8 JavaScript Engine, and executes JavaScript code outside a web browser.
+Back-End:
 
-2. **Express.js**: a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications
+- **Node.js**: a back-end JavaScript runtime environment, runs on the V8 JavaScript Engine, and executes JavaScript code outside a web browser.
 
-3. **PostgreSQL**: a relational database management system.
+- **Express.js**: a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications
+
+- **PostgreSQL**: a relational database management system.
+
+## 2. Implementation
+
+![alt ER Diagram](documentation/ER_Diagram.jpg?raw=true)
+![alt Sequence Diagram](documentation/Sequence_Diagram.jpg?raw=true)
