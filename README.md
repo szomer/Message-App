@@ -1,5 +1,7 @@
 # Message App
 
+Web application to send messages.
+
 ## 1. Technologies Used
 
 Front-End:
@@ -18,7 +20,13 @@ Back-End:
 
 - **PostgreSQL**: a relational database management system.
 
+- **Socket.IO**: a library that enables low-latency, bidirectional and event-based communication between a client and a server.
+
 ## 2. Implementation
 
-![alt ER Diagram](documentation/ER_Diagram.jpg?raw=true)
-![alt Sequence Diagram](documentation/Sequence_Diagram.JPG?raw=true)
+<div align="center">
+    <img alt="ER diagram" src="documentation/ER_Diagram.jpg" width="60%" /></br>
+    <i>ER Diagram - database</i></br></br>
+    <img alt="Sequence diagram" src="documentation/Sequence_Diagram.JPG" width="60%" /></br>
+    <i>Sequence Diagram - User signs in and sends a message</i>
+</div>s
