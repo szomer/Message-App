@@ -64,6 +64,16 @@ io.on('connection', (socket) => {
         io.emit('messageResponse', data);
     });
 
+
+    socket.on("private message", ({ content, to }) => {
+        console.log('private message', content, to);
+        socket.to(to).emit("private message", {
+            content,
+            from: socket.id,
+        });
+    });
+
+
     // Disconnect user
     socket.on('disconnect', () => {
         console.log('🔥: A user disconnected');

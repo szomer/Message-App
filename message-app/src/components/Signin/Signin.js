@@ -11,7 +11,7 @@ function Signin(props) {
     return (
         <div className="Signin">
             <form onSubmit={handleSubmit}>
-                <h2 >Sign in to Open Chat</h2>
+                <h2 >Sign in to Chat</h2>
                 <label htmlFor="username">Username</label>
                 <input
                     type="text"

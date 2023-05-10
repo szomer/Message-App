@@ -1,19 +1,17 @@
 import './App.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { socket } from '../../socket';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Signin from "../Signin/Signin";
+import Error from "../Error/Error";
+import Home from '../Home/Home';
+
 
 function App() {
   const [usernameAlreadySelected, setUsernameAlreadySelected] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState([])
-  const [data, setData] = useState();
-
-
-  useEffect(() => {
-    fetch('/api/test')
-      .then((data) => data.json())
-      .then((data) => setData(data.message));
-  }, [])
+  const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
 
   // socket.onAny((event, ...args) => {
   //   console.log(event, args);
@@ -35,25 +33,22 @@ function App() {
   });
 
   const onUsernameSelection = (userName) => {
-    console.log('sending username:', userName)
+    setUserName(userName);
     socket.auth = { userName };
     socket.connect();
     setUsernameAlreadySelected(true);
+    navigate('/home');
   };
 
   return (
     <div className="App">
-
-      {data &&
-        <p>{data}</p>
-      }
-      {
-        connectedUsers.map(user =>
-          <p>USER: {user.username}</p>
-        )}
-
-
-      <Signin submitUser={(userName) => onUsernameSelection(userName)} />
+      Chat
+      <Routes>
+        <Route exact path='/' element={<Signin submitUser={(userName) => onUsernameSelection(userName)} />} />
+        <Route path='/signin' element={<Signin submitUser={(userName) => onUsernameSelection(userName)} />} />
+        <Route path='/home' element={<Home socket={socket} connectedUsers={connectedUsers} userName={userName} />} />
+        <Route path='*' element={<Error />} />
+      </Routes>
 
     </div>
   );
