@@ -13,10 +13,6 @@ function App() {
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
-  // socket.onAny((event, ...args) => {
-  //   console.log(event, args);
-  // });
-
   socket.on("connect_error", (err) => {
     if (err.message === "invalid username") {
       setUsernameAlreadySelected(false);
@@ -29,7 +25,11 @@ function App() {
   });
 
   socket.on("user connected", (user) => {
-    console.log('user connected', user)
+    console.log('user connected', user);
+    setConnectedUsers((users) => ([
+      ...users,
+      user
+    ]));
   });
 
   const onUsernameSelection = (userName) => {
@@ -39,10 +39,8 @@ function App() {
     setUsernameAlreadySelected(true);
     navigate('/home');
   };
-
   return (
     <div className="App">
-      Chat
       <Routes>
         <Route exact path='/' element={<Signin submitUser={(userName) => onUsernameSelection(userName)} />} />
         <Route path='/signin' element={<Signin submitUser={(userName) => onUsernameSelection(userName)} />} />

@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
+import './Home.css';
+import UserList from "./UserList/UserList";
+import ChatBody from "./ChatBody/ChatBody";
+import ChatBox from "./ChatBox/ChatBox";
 
 function Home(props) {
-
     const [message, setMessage] = useState("");
-    const [selectedUser, setSelectedUser] = useState({ userID: '', username: '', messages: [] })
+    const [selectedUser, setSelectedUser] = useState({ userID: '', username: '' })
+    const [messages, setMessages] = useState([])
 
 
     const handleSubmitMessage = (e) => {
@@ -19,8 +23,21 @@ function Home(props) {
                 content: message,
                 to: selectedUser.userID,
             });
+            setMessages((data) => [...data, {
+                content: message,
+                fromSelf: true,
+            }])
+            console.log(messages)
         }
     }
+    props.socket.on("private message", ({ content, from }) => {
+        console.log('received:', content, from);
+
+        setMessages((data) => [...data, {
+            content: content,
+            fromSelf: false,
+        }])
+    });
 
     const onSelectUser = (user) => {
         if (user.userID && user.username) {
@@ -30,26 +47,22 @@ function Home(props) {
 
     return (
         <div className="Home">
-            <h2>Welcome {props.userName}</h2>
+            <div className="grid md:grid-cols-3">
+                <div className="Home-left">
+                    <UserList />
+                </div>
+                <div className="Home-right md:col-span-2">
+                    <div className="grid">
+                        <div className="row-span-3 bg-slate-500">
+                            <ChatBody />
+                        </div>
+                        <div className="bg-slate-700">
+                            <ChatBox />
+                        </div>
+                    </div>
 
-            <h2>All connected users:</h2>
-            {props.connectedUsers.map(user =>
-                <p>USER: <a onClick={() => onSelectUser(user)}>{user.username}</a></p>
-            )}
-
-            <h2>Selected user:</h2>
-            <p>{selectedUser.userID}, {selectedUser.username}</p>
-
-            <h2>Send a message:</h2>
-            <form>
-                <input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Write your message.."
-                />
-                <button onClick={handleSubmitMessage}>Send</button>
-            </form>
-
+                </div>
+            </div>
         </div>
     )
 }
