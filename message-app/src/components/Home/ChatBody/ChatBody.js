@@ -1,9 +1,19 @@
-function ChatBody() {
-    return (
-        <div className="ChatBody">
-            Chat Body
+import "./ChatBody.css";
+
+function ChatBody(props) {
+  return (
+    <div className="ChatBody">
+
+      {props.messages.map((message) => {
+        return <div className={message.fromSelf ? "sent_message" : "received_message"}>
+          <div className="p-2 mx-3 my-2 bg-slate-200 rounded shadow-sm shadow-slate-800">
+            {message.content}
+          </div>
         </div>
-    )
+      })}
+
+    </div>
+  )
 }
 
 export default ChatBody;
