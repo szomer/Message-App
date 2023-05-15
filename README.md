@@ -28,5 +28,7 @@ Back-End:
     <img alt="ER diagram" src="documentation/ER_Diagram.jpg" width="60%" /></br>
     <i>ER Diagram - database</i></br></br>
     <img alt="Sequence diagram" src="documentation/Sequence_Diagram.JPG" width="60%" /></br>
-    <i>Sequence Diagram - User signs in and sends a message</i>
+    <i>Sequence Diagram - User signs in and sends a message</i></br></br>
+    <img alt="Wireframes" src="documentation/Wireframes.png" width="70%" /></br>
+    <i>Wireframes - The home page for mobile and desktop</i>
 </div>
