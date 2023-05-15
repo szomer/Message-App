@@ -9,10 +9,9 @@ function Signin(props) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (signUp) {
-      console.log('User loggedin', userName, password);
       props.submitUser(userName);
     } else {
-      console.log('Create new user', userName, password);
+
       // create new user here
     }
   };

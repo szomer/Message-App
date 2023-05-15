@@ -8,37 +8,39 @@ import Home from '../Home/Home';
 
 
 function App() {
-  const [usernameAlreadySelected, setUsernameAlreadySelected] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState([])
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
-  socket.on("connect_error", (err) => {
-    if (err.message === "invalid username") {
-      setUsernameAlreadySelected(false);
-    }
+  socket.onAny((event, ...args) => {
+    console.log(event, args);
   });
-
+  // Get all the users
   socket.on("users", (users) => {
-    console.log('users', users);
     setConnectedUsers(users);
   });
-
+  // When new user joins
   socket.on("user connected", (user) => {
-    console.log('user connected', user);
     setConnectedUsers((users) => ([
       ...users,
       user
     ]));
   });
-
+  // Log in
   const onUsernameSelection = (userName) => {
     setUserName(userName);
     socket.auth = { userName };
     socket.connect();
-    setUsernameAlreadySelected(true);
     navigate('/home');
   };
+  // Error with login
+  socket.on("connect_error", (err) => {
+    if (err.message === "invalid username") {
+      console.log('error with username');
+      setUserName('');
+    }
+  });
+
   return (
     <div className="App">
       <Routes>
@@ -47,7 +49,6 @@ function App() {
         <Route path='/home' element={<Home socket={socket} connectedUsers={connectedUsers} userName={userName} />} />
         <Route path='*' element={<Error />} />
       </Routes>
-
     </div>
   );
 }

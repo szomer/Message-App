@@ -4,7 +4,6 @@ import "./UserList.css";
 function UserList(props) {
 
   const onUserClick = (user) => {
-    console.log('user clicked', user);
     props.onSelectUser(user);
   }
 

@@ -5,38 +5,49 @@ import ChatBody from "./ChatBody/ChatBody";
 import ChatBox from "./ChatBox/ChatBox";
 
 function Home(props) {
+  // Keep track of which user is currently selected
   const [selectedUser, setSelectedUser] = useState({ userID: '', username: '' })
-  const [messages, setMessages] = useState([])
+  // Store messages of users
+  const [messages, setMessages] = useState({});
 
-
-  const sendMessage = (message) => {
-    console.log('send message', message, selectedUser.userID);
-    if (message && selectedUser.userID) {
-      props.socket.emit("private message", {
-        content: message,
-        to: selectedUser.userID,
-      });
-      setMessages((data) => [...data, {
-        content: message,
-        fromSelf: true,
-      }])
-      console.log(messages)
+  // Add message to array
+  const addMessage = (content, fromSelf, userID) => {
+    let arr = [];
+    if (messages[selectedUser.userID]) {
+      arr = messages[selectedUser.userID];
     }
+    arr.push({ content, fromSelf });
+    setMessages((data) => {
+      return {
+        ...data,
+        [userID]: arr
+      }
+    })
   }
-  props.socket.on("private message", ({ content, from }) => {
-    console.log('received:', content, from);
 
-    setMessages((data) => [...data, {
-      content: content,
-      fromSelf: false,
-    }])
-  });
-
+  // Select a user from list
   const onSelectUser = (user) => {
     if (user.userID && user.username) {
       setSelectedUser(user);
     }
   }
+
+  // Send a message
+  const sendMessage = (message) => {
+    if (message && selectedUser.userID) {
+      // Emit message socketio
+      props.socket.emit("private message", {
+        content: message,
+        to: selectedUser.userID,
+      });
+      addMessage(message, true, selectedUser.userID)
+    }
+  }
+
+  // Receive a message
+  props.socket.on("private message", ({ content, from }) => {
+    addMessage(content, false, from);
+  });
 
   return (
     <div className="Home">
@@ -50,7 +61,7 @@ function Home(props) {
         <div className="Home-right md:col-span-2">
           <div className="flex flex-col h-full">
             <div className="grow bg-slate-500 overflow-y-auto">
-              <ChatBody messages={messages} />
+              <ChatBody messages={messages[selectedUser.userID]} />
             </div>
             <div className="col bg-slate-700">
               <ChatBox sendMessage={sendMessage} />
