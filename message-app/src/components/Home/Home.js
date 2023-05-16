@@ -10,13 +10,51 @@ function Home(props) {
   // Store messages of users
   const [messages, setMessages] = useState({});
   const [notifications, setNotifications] = useState({});
+  const [userList, setUserList] = useState([])
 
   useEffect(() => {
     // Receive a message
     props.socket.on("private message", ({ content, from }) => {
       addMessage(content, false, from);
     });
-  }, [messages]);
+
+    // Get all the users
+    props.socket.on("users", (users) => {
+      const list = users.map((usr) => {
+        if (usr.userID === props.socket.userID) usr["self"] = true;
+        return usr;
+      });
+      setUserList(list);
+    });
+
+    // User connects
+    props.socket.on("user connected", (user) => {
+      for (let userFromList of userList) {
+        if (userFromList.userID === user.userID) {
+          userFromList.connected = true;
+          return;
+        }
+        setUserList((existing) => {
+          if (existing[user.userID]) {
+            existing[user.userID].connected = true;
+            return existing;
+          } else {
+            return { ...existing, user };
+          }
+        })
+      }
+    })
+
+    // User disconnects
+    props.socket.on("disconnect", (userID) => {
+      for (let userFromList of userList) {
+        if (userFromList.userID === userID) {
+          userFromList.connected = false;
+          break;
+        }
+      }
+    })
+  }, [messages, userList]);
 
   // Add message to array
   const addMessage = (content, fromSelf, userID) => {
@@ -31,7 +69,6 @@ function Home(props) {
         [userID]: arr
       }
     });
-    console.log('selected', selectedUser.userID, 'from', userID, (selectedUser.userID !== userID))
     if (!fromSelf && (selectedUser.userID !== userID)) {
       setNotifications((notifications) => {
         notifications[userID] = (notifications[userID] || 0) + 1;
@@ -64,7 +101,7 @@ function Home(props) {
       <div className="grid md:grid-cols-3">
         <div className="Home-left">
           <UserList
-            connectedUsers={props.connectedUsers}
+            userList={userList}
             onSelectUser={onSelectUser}
             notifications={notifications}
           />

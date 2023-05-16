@@ -8,39 +8,50 @@ import Home from '../Home/Home';
 
 
 function App() {
-  const [connectedUsers, setConnectedUsers] = useState([])
-  const [userName, setUserName] = useState("");
   const navigate = useNavigate();
+  const [userNameSelected, setUserNameSelected] = useState(false);
 
   useEffect(() => {
-    socket.onAny((event, ...args) => {
-      console.log('EVENT', event, args);
-    });
-    // Get all the users
-    socket.on("users", (users) => {
-      setConnectedUsers((users.filter((user) => (user.username !== userName))));
-    });
+    const sessionID = localStorage.getItem("sessionID");
+    if (sessionID) {
+      socket.auth = { sessionID };
+      socket.connect();
+      navigate('/home');
+    }
+
+    socket.on("session", ({ sessionID, userID }) => {
+      setUserNameSelected(true);
+      // attach sessionID to the next reconnection attempts
+      socket.auth = { sessionID };
+      // store it in local storage
+      localStorage.setItem("sessionID", sessionID);
+      // save the ID of the user 
+      socket.userID = userID;
+    })
+
     // Error with login
     socket.on("connect_error", (err) => {
       if (err.message === "invalid username") {
-        setUserName('');
+        setUserNameSelected(false);
       }
     });
-  }, [connectedUsers, userName, socket]);
+  }, [socket, userNameSelected]);
 
   // Log in
-  const onUsernameSelection = (userName) => {
-    setUserName(userName);
+  const onUsernameSelection = (userName, password) => {
+    // --- TO DO: add validation here
+    setUserNameSelected(true);
     socket.auth = { userName };
     socket.connect();
     navigate('/home');
   };
 
+
   return (
     <div className="App">
       <Routes>
-        <Route exact path='/' element={<Signin submitUser={(userName) => onUsernameSelection(userName)} />} />
-        <Route path='/home' element={<Home socket={socket} connectedUsers={connectedUsers} userName={userName} />} />
+        <Route exact path='/' element={<Signin submitUser={onUsernameSelection} userNameSelected={userNameSelected} />} />
+        <Route path='/home' element={<Home socket={socket} />} />
         <Route path='*' element={<Error />} />
       </Routes>
     </div>

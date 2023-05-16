@@ -4,6 +4,7 @@ const express = require("express");
 const path = require("path");
 const cors = require('cors');
 
+
 // Controllers
 const dbController = require('./controllers/dbController');
 
@@ -27,42 +28,89 @@ const io = require('socket.io')(http, {
   }
 });
 
+// Crypto
+const crypto = require("crypto");
+const randomId = () => crypto.randomBytes(8).toString("hex");
+
+// Session
+const { InMemorySessionStore } = require("./sessionStore");
+const sessionStore = new InMemorySessionStore();
+
+
 // Middleware that checks the username
-io.use((socket, next) => {
+io.use(async (socket, next) => {
+  // Check for username and session details
+  const sessionID = socket.handshake.auth.sessionID;
+  if (sessionID) {
+    const session = await sessionStore.findSession(sessionID);
+    if (session) {
+      socket.sessionID = sessionID;
+      socket.userID = session.userID;
+      socket.username = session.username;
+      return next();
+    }
+  }
   const username = socket.handshake.auth.userName;
   if (!username) return next(new Error('invalid username'));
+  socket.sessionID = randomId();
+  socket.userID = randomId();
   socket.username = username;
   next();
 });
 io.on('connection', (socket) => {
-  // New connection with unique id
-  console.log(`⚡: user [${socket.username}] just connected!`);
+  // persistent session
+  sessionStore.saveSession(socket.sessionID, {
+    userID: socket.userID,
+    username: socket.username,
+    connected: true
+  });
+  // emit session details
+  socket.emit("session", {
+    sessionID: socket.sessionID,
+    userID: socket.userID
+  });
 
-  // Send all connected users to client
+  // join the "userID" room
+  socket.join(socket.userID);
+
+  // fetch all existing users
   let users = [];
-  for (let [id, socket] of io.of("/").sockets) {
+  sessionStore.findAllSessions().forEach((session) => {
     users.push({
-      userID: id,
-      username: socket.username,
-    });
-  }
+      userID: session.userID,
+      username: session.username,
+      connected: session.connected
+    })
+  });
   socket.emit("users", users);
-  socket.broadcast.emit("users", users);
 
+  // notify existing users
+  socket.broadcast.emit("user connected", {
+    userID: socket.userID,
+    username: socket.username,
+    connected: true
+  });
+
+  // forward the private message to the recipient
   socket.on("private message", ({ content, to }) => {
     socket.to(to).emit("private message", {
       content,
-      from: socket.id,
+      from: socket.userID,
     });
   });
 
   // Disconnect user
-  socket.on('disconnect', () => {
-    console.log('🔥: A user disconnected');
-    users = users.filter((user) => user.socketID !== socket.id);
-    socket.emit("users", users);
-    socket.broadcast.emit("users", users);
-    socket.disconnect();
+  socket.on('disconnect', async () => {
+    const matchingSockets = await io.in(socket.userID).allSockets();
+    const isDisconnected = matchingSockets.size === 0;
+    if (isDisconnected) {
+      socket.broadcast.emit("user disconnected", socket.userID);
+      sessionStore.saveSession(socket.sessionID, {
+        userID: socket.userID,
+        username: socket.username,
+        connected: false
+      });
+    };
   });
 });
 
