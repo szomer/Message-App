@@ -1,0 +1,14 @@
+.UserList .notification {
+  color: white;
+  margin: 0 0.5rem;
+  background-color: lightcoral;
+  border-radius: 0.3rem;
+  border: 1px solid red;
+  width: 1.6rem;
+  height: 1.6rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  align-items: center;
+}

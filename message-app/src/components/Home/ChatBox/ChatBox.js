@@ -8,9 +8,9 @@ function ChatBox(props) {
   const onClickSend = (e) => {
     e.preventDefault();
     if (message) {
-      console.log('send message', message);
       props.sendMessage(message);
     }
+    setMessage("");
   }
   return (
     <div className="ChatBox">

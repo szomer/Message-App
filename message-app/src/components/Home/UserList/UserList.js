@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Menu from "../Menu/Menu";
 import "./UserList.css";
 
@@ -16,9 +17,13 @@ function UserList(props) {
       {props.connectedUsers.map((user) => {
         return <div
           onClick={() => onUserClick(user)}
-          className="py-3 px-2 bg-slate-200 border-solid border-b-2 hover:bg-slate-300 border-sky-500"
+          className="py-3 px-2 bg-slate-200 border-solid border-b-2 hover:bg-slate-300 border-sky-500 flex flex-row justify-between"
         >
-          <span>{user.username}</span> - <span>{user.userID}</span>
+          <span>{user.username}- {user.userID}</span>
+          {props.notifications[user.userID] > 0 &&
+            <div className="notification">
+              <span>{props.notifications[user.userID]}</span>
+            </div>}
         </div>
       })}
     </div>

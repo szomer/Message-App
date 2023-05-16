@@ -9,6 +9,14 @@ function Home(props) {
   const [selectedUser, setSelectedUser] = useState({ userID: '', username: '' })
   // Store messages of users
   const [messages, setMessages] = useState({});
+  const [notifications, setNotifications] = useState({});
+
+  useEffect(() => {
+    // Receive a message
+    props.socket.on("private message", ({ content, from }) => {
+      addMessage(content, false, from);
+    });
+  }, [messages]);
 
   // Add message to array
   const addMessage = (content, fromSelf, userID) => {
@@ -22,16 +30,23 @@ function Home(props) {
         ...data,
         [userID]: arr
       }
-    })
+    });
+    console.log('selected', selectedUser.userID, 'from', userID, (selectedUser.userID !== userID))
+    if (!fromSelf && (selectedUser.userID !== userID)) {
+      setNotifications((notifications) => {
+        notifications[userID] = (notifications[userID] || 0) + 1;
+        return notifications;
+      });
+    }
   }
 
   // Select a user from list
   const onSelectUser = (user) => {
     if (user.userID && user.username) {
       setSelectedUser(user);
+      notifications[user.userID] = 0;
     }
   }
-
   // Send a message
   const sendMessage = (message) => {
     if (message && selectedUser.userID) {
@@ -44,11 +59,6 @@ function Home(props) {
     }
   }
 
-  // Receive a message
-  props.socket.on("private message", ({ content, from }) => {
-    addMessage(content, false, from);
-  });
-
   return (
     <div className="Home">
       <div className="grid md:grid-cols-3">
@@ -56,6 +66,7 @@ function Home(props) {
           <UserList
             connectedUsers={props.connectedUsers}
             onSelectUser={onSelectUser}
+            notifications={notifications}
           />
         </div>
         <div className="Home-right md:col-span-2">

@@ -27,19 +27,19 @@ const io = require('socket.io')(http, {
   }
 });
 
-// Retrieve the username
+// Middleware that checks the username
 io.use((socket, next) => {
   const username = socket.handshake.auth.userName;
   if (!username) return next(new Error('invalid username'));
   socket.username = username;
   next();
-})
+});
 io.on('connection', (socket) => {
   // New connection with unique id
-  console.log(`⚡: user [userID: ${socket.id}, username: ${socket.username}] just connected!`);
+  console.log(`⚡: user [${socket.username}] just connected!`);
 
   // Send all connected users to client
-  const users = [];
+  let users = [];
   for (let [id, socket] of io.of("/").sockets) {
     users.push({
       userID: id,
@@ -47,35 +47,22 @@ io.on('connection', (socket) => {
     });
   }
   socket.emit("users", users);
-
-  // notify existing users
-  socket.broadcast.emit("user connected", {
-    userID: socket.id,
-    username: socket.username,
-  });
-
-
-  // Listens for incoming message
-  socket.on('message', (data) => {
-    console.log(data);
-    // Send to all users
-    io.emit('messageResponse', data);
-  });
-
+  socket.broadcast.emit("users", users);
 
   socket.on("private message", ({ content, to }) => {
-    console.log('private message', content, to);
     socket.to(to).emit("private message", {
       content,
       from: socket.id,
     });
   });
 
-
   // Disconnect user
   socket.on('disconnect', () => {
     console.log('🔥: A user disconnected');
-
+    users = users.filter((user) => user.socketID !== socket.id);
+    socket.emit("users", users);
+    socket.broadcast.emit("users", users);
+    socket.disconnect();
   });
 });
 
