@@ -30,7 +30,9 @@ const randomId = () => crypto.randomBytes(8).toString("hex");
 // Session
 const { InMemorySessionStore } = require("./sessionStore");
 const sessionStore = new InMemorySessionStore();
-
+// Messages
+const { InMemoryMessageStore } = require("./messageStore");
+const messageStore = new InMemoryMessageStore();
 
 // Middleware that checks the username
 io.use(async (socket, next) => {
@@ -71,13 +73,25 @@ io.on('connection', (socket) => {
   // join the "userID" room
   socket.join(socket.userID);
 
+  // fetch all existing messages
+  let messagesPerUser = new Map();
+  messageStore.findMessagesForUser(socket.userID).forEach((message) => {
+    const { from, to } = message;
+    const otherUser = socket.userID === from ? to : from;
+    if (messagesPerUser.has(otherUser)) {
+      messagesPerUser.get(otherUser).push(message);
+    } else {
+      messagesPerUser.set(otherUser, [message]);
+    }
+  });
   // fetch all existing users
   let users = [];
   sessionStore.findAllSessions().forEach((session) => {
     users.push({
       userID: session.userID,
       username: session.username,
-      connected: session.connected
+      connected: session.connected,
+      messages: messagesPerUser.get(session.userID) || [],
     })
   });
   socket.emit("users", users);
@@ -86,15 +100,21 @@ io.on('connection', (socket) => {
   socket.broadcast.emit("user connected", {
     userID: socket.userID,
     username: socket.username,
-    connected: true
+    connected: true,
+    messages: [],
   });
 
   // forward the private message to the recipient
   socket.on("private message", ({ content, to }) => {
-    socket.to(to).emit("private message", {
+    const message = {
       content,
       from: socket.userID,
-    });
+      to
+    }
+    // Forward message
+    socket.to(to).to(socket.userID).emit("private message", message);
+    // Store the message
+    messageStore.saveMessage(message);
   });
 
   // Disconnect user
@@ -111,7 +131,6 @@ io.on('connection', (socket) => {
     };
   });
 });
-
 
 // Routes
 var backendRouter = require('./routes/backend');

@@ -111,6 +111,7 @@ function Home(props) {
       props.socket.off("user connected");
       props.socket.off("disconnect");
       props.socket.off("private message");
+      props.socket.off("connect_error");
     };
   }, [props.socket, setNewMessage, userList]);
 

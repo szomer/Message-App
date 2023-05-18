@@ -35,13 +35,7 @@ function App() {
         setUserNameSelected(false);
       }
     });
-
-    return () => {
-      // Remove eventlisteners
-      socket.off("session");
-      socket.off("connect_error");
-    };
-  }, []);
+  }, [navigate]);
 
   // Log in
   const onUsernameSelection = (userName, password) => {
