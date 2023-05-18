@@ -1,14 +1,23 @@
+.UserList #listitem {
+  cursor: pointer;
+}
+.UserList #listitem span {
+  pointer-events: none;
+}
 .UserList .notification {
   color: white;
   margin: 0 0.5rem;
   background-color: lightcoral;
   border-radius: 0.3rem;
   border: 1px solid red;
-  width: 1.6rem;
-  height: 1.6rem;
+  padding: 0rem 0.2rem;
+  font-size: 0.9rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-items: center;
   align-items: center;
+}
+.UserList .selectedListItem {
+  background-color: #f4cdff;
 }
