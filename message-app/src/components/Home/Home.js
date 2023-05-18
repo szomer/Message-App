@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import './Home.css';
 import UserList from "./UserList/UserList";
 import ChatBody from "./ChatBody/ChatBody";
@@ -12,63 +12,8 @@ function Home(props) {
   // Store users
   const [userList, setUserList] = useState([])
 
-  useEffect(() => {
-    // Receive a message
-    props.socket.on("private message", ({ content, from }) => {
-      setNewMessage(content, false, from);
-    });
-    // Get all the users
-    props.socket.on("users", (users) => {
-      setUsers(users);
-    });
-    // User connects
-    props.socket.on("user connected", (user) => {
-      setConnected(user);
-    })
-    // User disconnects
-    props.socket.on("disconnect", (userID) => {
-      setDisconnected(userID);
-    })
-  }, []);
-
-  // Set users in userList
-  const setUsers = (users) => {
-    // Add self and newmessages property
-    const list = users.map((usr) => {
-      usr.newmessages = 0;
-      if (usr.userID === props.socket.userID) usr["self"] = true;
-      return usr;
-    });
-    setUserList(list);
-  }
-  // Connect user
-  const setConnected = (connectedUser) => {
-    // Check if user already in list
-    for (let user of userList) {
-      // Update existing user
-      if (user.userID === connectedUser.userID) {
-        user.connected = true;
-        setUserList(userList);
-        return;
-      }
-    }
-    // Add new user
-    connectedUser.newmessages = 0;
-    setUserList((existing) => ([...existing, connectedUser]));
-  }
-  // Disconnect user
-  const setDisconnected = (userID) => {
-    for (let user of userList) {
-      // If user found, update connected
-      if (user.userID === userID) {
-        user.connected = false;
-        setUserList(userList);
-        return;
-      }
-    }
-  }
   // Add message to array
-  const setNewMessage = (content, fromSelf, userID) => {
+  const setNewMessage = useCallback((content, fromSelf, userID) => {
     let arr = [];
     if (messages[selectedUser.userID]) {
       arr = messages[selectedUser.userID];
@@ -86,7 +31,8 @@ function Home(props) {
         setMessagesNotification(userID);
       }
     }
-  }
+  }, [selectedUser, messages]);
+
   // Set notification ++
   const setMessagesNotification = (userID) => {
     setUserList((users) => {
@@ -98,7 +44,8 @@ function Home(props) {
       }
       return users;
     })
-  }
+  };
+
   // Set notification to 0
   const setMessagesNotificationToZero = (userID) => {
     setUserList((users) => {
@@ -110,7 +57,62 @@ function Home(props) {
       }
       return users;
     })
-  }
+  };
+
+  useEffect(() => {
+    // Get all the users
+    props.socket.on("users", (users) => setUsers(users));
+    // User connects
+    props.socket.on("user connected", (user) => setConnected(user));
+    // User disconnects
+    props.socket.on("disconnect", (userID) => setDisconnected(userID));
+    // Receive a message
+    props.socket.on("private message", ({ content, from }) => setNewMessage(content, false, from));
+
+    // Set users in userList
+    const setUsers = (users) => {
+      // Add self and newmessages property
+      const list = users.map((usr) => {
+        usr.newmessages = 0;
+        if (usr.userID === props.socket.userID) usr["self"] = true;
+        return usr;
+      });
+      setUserList(list);
+    };
+    // Connect user
+    const setConnected = (connectedUser) => {
+      // Check if user already in list
+      for (let user of userList) {
+        // Update existing user
+        if (user.userID === connectedUser.userID) {
+          user.connected = true;
+          setUserList(userList);
+          return;
+        }
+      }
+      // Add new user
+      connectedUser.newmessages = 0;
+      setUserList((existing) => ([...existing, connectedUser]));
+    }
+    // Disconnect user
+    const setDisconnected = (userID) => {
+      for (let user of userList) {
+        // If user found, update connected
+        if (user.userID === userID) {
+          user.connected = false;
+          setUserList(userList);
+          return;
+        }
+      }
+    }
+    return () => {
+      // Remove eventlisteners
+      props.socket.off("users");
+      props.socket.off("user connected");
+      props.socket.off("disconnect");
+      props.socket.off("private message");
+    };
+  }, [props.socket, setNewMessage, userList]);
 
   // Select a user from list
   const handleSelectUser = (user) => {
@@ -118,7 +120,8 @@ function Home(props) {
       setSelectedUser({ userID: user.userID, username: user.username });
       setMessagesNotificationToZero(user.userID);
     }
-  }
+  };
+
   // Send a message
   const handleSendMessage = (message) => {
     if (message && selectedUser.userID) {
@@ -129,7 +132,7 @@ function Home(props) {
       });
       setNewMessage(message, true, selectedUser.userID)
     }
-  }
+  };
 
   return (
     <div className="Home">

@@ -1,6 +1,6 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import { socket } from '../../socket';
+import { socket } from './socket';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Signin from "../Signin/Signin";
 import Error from "../Error/Error";
@@ -23,7 +23,7 @@ function App() {
       setUserNameSelected(true);
       // attach sessionID to the next reconnection attempts
       socket.auth = { sessionID };
-      // store it in local storage
+      // store  in local storage
       localStorage.setItem("sessionID", sessionID);
       // save the ID of the user 
       socket.userID = userID;
@@ -35,7 +35,13 @@ function App() {
         setUserNameSelected(false);
       }
     });
-  }, [socket, userNameSelected]);
+
+    return () => {
+      // Remove eventlisteners
+      socket.off("session");
+      socket.off("connect_error");
+    };
+  }, []);
 
   // Log in
   const onUsernameSelection = (userName, password) => {
@@ -43,9 +49,8 @@ function App() {
     setUserNameSelected(true);
     socket.auth = { userName };
     socket.connect();
-    navigate('/home');
+    navigate("/home");
   };
-
 
   return (
     <div className="App">

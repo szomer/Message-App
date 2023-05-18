@@ -1,8 +1,8 @@
 .Home {
   height: 100%;
   width: 100%;
-  .grid {
-    width: 100%;
-    height: 100%;
-  }
+}
+.Home .grid {
+  width: 100%;
+  height: 100%;
 }

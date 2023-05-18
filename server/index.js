@@ -3,12 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const cors = require('cors');
-
-
-// Controllers
 const dbController = require('./controllers/dbController');
-
-// Models
 
 // ENV 
 const PORT = process.env.PORT || 3001;
@@ -39,7 +34,7 @@ const sessionStore = new InMemorySessionStore();
 
 // Middleware that checks the username
 io.use(async (socket, next) => {
-  // Check for username and session details
+  // Exisitng session
   const sessionID = socket.handshake.auth.sessionID;
   if (sessionID) {
     const session = await sessionStore.findSession(sessionID);
@@ -52,11 +47,14 @@ io.use(async (socket, next) => {
   }
   const username = socket.handshake.auth.userName;
   if (!username) return next(new Error('invalid username'));
+  // New session
+  // Generate random session and user id
   socket.sessionID = randomId();
   socket.userID = randomId();
   socket.username = username;
   next();
 });
+
 io.on('connection', (socket) => {
   // persistent session
   sessionStore.saveSession(socket.sessionID, {
@@ -64,7 +62,7 @@ io.on('connection', (socket) => {
     username: socket.username,
     connected: true
   });
-  // emit session details
+  // Send session details
   socket.emit("session", {
     sessionID: socket.sessionID,
     userID: socket.userID

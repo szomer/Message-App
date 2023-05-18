@@ -1,7 +1,8 @@
 .UserList #listitem {
   cursor: pointer;
 }
-.UserList #listitem span {
+.UserList #listitem span,
+.UserList #listitem div {
   pointer-events: none;
 }
 .UserList .notification {
